@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "title": "Frontend Developer",
+    "company": "TechNova",
+    "location": "Islamabad",
+    "category": "Technology",
+    "type": "Full-time",
+    "description": "Build responsive user interfaces, work with designers and backend developers, and improve the performance and accessibility of web applications. Experience with HTML, CSS and JavaScript is useful."
+  },
+  {
+    "id": 2,
+    "title": "Backend Developer",
+    "company": "CodeCraft",
+    "location": "Lahore",
+    "category": "Technology",
+    "type": "Full-time",
+    "description": "Develop and maintain server-side applications and APIs. Collaborate with the product team, write reliable code, and help improve database performance and application security."
+  },
+  {
+    "id": 3,
+    "title": "UI/UX Designer",
+    "company": "PixelWorks",
+    "location": "Karachi",
+    "category": "Design",
+    "type": "Contract",
+    "description": "Create clear, user-friendly digital experiences. Prepare wireframes and prototypes, conduct usability reviews, and collaborate with developers to deliver polished interfaces."
+  },
+  {
+    "id": 4,
+    "title": "Digital Marketing Manager",
+    "company": "BrandBoost",
+    "location": "Islamabad",
+    "category": "Marketing",
+    "type": "Full-time",
+    "description": "Plan and manage digital marketing campaigns, review campaign performance, coordinate content, and help grow brand awareness across online channels."
+  },
+  {
+    "id": 5,
+    "title": "Financial Analyst",
+    "company": "Meridian Bank",
+    "location": "Lahore",
+    "category": "Finance",
+    "type": "Full-time",
+    "description": "Analyze financial information, prepare reports, monitor budgets, and provide insights that support business and investment decisions."
+  },
+  {
+    "id": 6,
+    "title": "Registered Nurse",
+    "company": "CareFirst Clinic",
+    "location": "Rawalpindi",
+    "category": "Healthcare",
+    "type": "Part-time",
+    "description": "Provide patient care, monitor patient progress, maintain accurate records, and coordinate with clinical staff while following professional care standards."
+  },
+  {
+    "id": 7,
+    "title": "Graphic Designer",
+    "company": "Creative Hive",
+    "location": "Remote",
+    "category": "Design",
+    "type": "Freelance",
+    "description": "Create visual concepts for digital and print materials, collaborate with clients, and prepare design assets that follow brand guidelines."
+  },
+  {
+    "id": 8,
+    "title": "Data Analyst",
+    "company": "InsightLab",
+    "location": "Karachi",
+    "category": "Technology",
+    "type": "Full-time",
+    "description": "Collect, clean and analyze datasets, build reports and dashboards, and communicate useful findings to help teams make informed decisions."
+  },
+  {
+    "id": 9,
+    "title": "Content Writer",
+    "company": "BrandBoost",
+    "location": "Remote",
+    "category": "Marketing",
+    "type": "Part-time",
+    "description": "Research topics and write clear, engaging content for websites, blogs and marketing materials while following editorial guidelines."
+  },
+  {
+    "id": 10,
+    "title": "Accountant",
+    "company": "Meridian Bank",
+    "location": "Islamabad",
+    "category": "Finance",
+    "type": "Full-time",
+    "description": "Maintain financial records, prepare account reconciliations, assist with financial statements, and support accurate monthly reporting."
+  },
+  {
+    "id": 11,
+    "title": "Pharmacist",
+    "company": "HealthPlus",
+    "location": "Lahore",
+    "category": "Healthcare",
+    "type": "Full-time",
+    "description": "Review prescriptions, provide medicine-related guidance, maintain pharmacy records, and support safe medication practices."
+  },
+  {
+    "id": 12,
+    "title": "Mobile App Developer",
+    "company": "TechNova",
+    "location": "Remote",
+    "category": "Technology",
+    "type": "Contract",
+    "description": "Develop and test mobile application features, collaborate with product and design teams, and help maintain app quality across devices."
+  }
+]
