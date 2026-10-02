@@ -44,7 +44,6 @@ function saveWishlist() {
   }
 }
 
-// Use an explicit job ID when available, otherwise build a stable key from job details.
 function getJobId(job) {
   if (job.id !== undefined && job.id !== null) return String(job.id);
   return [job.title, job.company, job.location].map(normalize).join("|");
@@ -52,8 +51,8 @@ function getJobId(job) {
 
 function updateWishlistCount() {
   const count = wishlist.length;
-  wishlistCount.innerHTML = `♥ Saved jobs: <strong>${count}</strong>`;
-  wishlistCount.setAttribute("aria-label", `${count} ${count === 1 ? "job" : "jobs"} saved`);
+  wishlistCount.innerHTML = `♥ Saved jobs: **${count}**`;
+  wishlistCount.setAttribute("aria-label", `\({count}\){count === 1 ? "job" : "jobs"} saved`);
 }
 
 function updateWishlistButton(button, job) {
@@ -61,7 +60,7 @@ function updateWishlistButton(button, job) {
   button.classList.toggle("is-saved", isSaved);
   button.textContent = isSaved ? "♥" : "♡";
   button.setAttribute("aria-pressed", String(isSaved));
-  button.setAttribute("aria-label", `${isSaved ? "Remove" : "Add"} ${job.title || "this job"} ${isSaved ? "from" : "to"} wishlist`);
+  button.setAttribute("aria-label", `\({isSaved ? "Remove" : "Add"}\){job.title || "this job"} ${isSaved ? "from" : "to"} wishlist`);
 }
 
 function toggleWishlist(job, button) {
@@ -117,7 +116,6 @@ function openJobModal(job, triggerElement) {
   jobModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
 
-  // Move keyboard focus into the dialog after it becomes visible.
   closeModalButton.focus();
 }
 
@@ -139,7 +137,7 @@ function createJobCard(job) {
   card.tabIndex = 0;
   card.setAttribute("role", "group");
   card.setAttribute("aria-haspopup", "dialog");
-  card.setAttribute("aria-label", `View details for ${job.title || "job"} at ${job.company || "company"}`);
+  card.setAttribute("aria-label", `View details for \({job.title || "job"} at\){job.company || "company"}`);
 
   const image = document.createElement("div");
   image.className = "card-image";
@@ -201,7 +199,7 @@ function renderJobs(jobs) {
 
   noResults.hidden = jobs.length !== 0;
   updateWishlistCount();
-  resultsCount.textContent = `${jobs.length} ${jobs.length === 1 ? "job" : "jobs"} found`;
+  resultsCount.textContent = `\({jobs.length}\){jobs.length === 1 ? "job" : "jobs"} found`;
 }
 
 function applyFilters() {
@@ -226,7 +224,8 @@ function applyFilters() {
 
 async function loadJobs() {
   try {
-    const response = await fetch('./jobs.json' , { cache: "no-store" });
+    const jsonUrl = new URL('jobs.json', window.location.href).href;
+    const response = await fetch(jsonUrl, { cache: "no-store" });
     if (!response.ok) {
       throw new Error(`Could not load jobs.json (HTTP ${response.status}).`);
     }
@@ -249,7 +248,6 @@ async function loadJobs() {
   }
 }
 
-// Modal close controls: close button, backdrop click and Escape key.
 closeModalButton.addEventListener("click", closeJobModal);
 
 jobModal.addEventListener("click", event => {
@@ -265,7 +263,6 @@ document.addEventListener("keydown", event => {
     return;
   }
 
-  // Keep Tab navigation inside the open dialog.
   if (event.key === "Tab") {
     const focusable = [...jobModal.querySelectorAll(
       'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
@@ -290,8 +287,6 @@ document.addEventListener("keydown", event => {
   }
 });
 
-// A real application URL can be added to a job as "applyUrl" in jobs.json.
-// Do not invent an application destination when the data does not provide one.
 applyButton.addEventListener("click", () => {
   const applyUrl = applyButton.dataset.applyUrl;
 
