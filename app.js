@@ -1,5 +1,5 @@
 // TalentHub Recruiters - job loading, live filters and accessible job details modal
-fetch('jobs.json')
+
 const jobGrid = document.getElementById("jobGrid");
 const searchInput = document.getElementById("searchInput");
 const categorySelect = document.getElementById("categorySelect");
