@@ -1,3 +1,4 @@
+
 // TalentHub Recruiters - job loading, live filters and accessible job details modal
 
 const jobGrid = document.getElementById("jobGrid");
@@ -23,282 +24,477 @@ let allJobs = [];
 let previouslyFocusedElement = null;
 let wishlist = loadWishlist();
 
+
+// LOAD WISHLIST
 function loadWishlist() {
-  try {
-    const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    const parsed = saved ? JSON.parse(saved) : [];
-    return Array.isArray(parsed) ? parsed.filter(id => typeof id === "string") : [];
-  } catch (error) {
-    console.warn("Could not read the saved wishlist:", error);
-    return [];
-  }
+    try {
+        const saved = localStorage.getItem(WISHLIST_STORAGE_KEY);
+        const parsed = saved ? JSON.parse(saved) : [];
+
+        return Array.isArray(parsed)
+            ? parsed.filter(id => typeof id === "string")
+            : [];
+
+    } catch (error) {
+        console.warn("Could not read the saved wishlist:", error);
+        return [];
+    }
 }
 
+
+// SAVE WISHLIST
 function saveWishlist() {
-  try {
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlist));
-    return true;
-  } catch (error) {
-    console.error("Could not save the wishlist:", error);
-    return false;
-  }
+    try {
+        localStorage.setItem(
+            WISHLIST_STORAGE_KEY,
+            JSON.stringify(wishlist)
+        );
+
+        return true;
+
+    } catch (error) {
+        console.error("Could not save the wishlist:", error);
+        return false;
+    }
 }
 
+
+// GET JOB ID
 function getJobId(job) {
-  if (job.id !== undefined && job.id !== null) return String(job.id);
-  return [job.title, job.company, job.location].map(normalize).join("|");
+    if (job.id !== undefined && job.id !== null) {
+        return String(job.id);
+    }
+
+    return [job.title, job.company, job.location]
+        .map(normalize)
+        .join("|");
 }
 
+
+// UPDATE WISHLIST COUNT
 function updateWishlistCount() {
-  const count = wishlist.length;
-  wishlistCount.innerHTML = `♥ Saved jobs: **${count}**`;
-  wishlistCount.setAttribute("aria-label", `\({count}\){count === 1 ? "job" : "jobs"} saved`);
+    const count = wishlist.length;
+
+    // Fixed: Removed Markdown ** symbols
+    wishlistCount.textContent = `♥ Saved jobs: ${count}`;
+
+    wishlistCount.setAttribute(
+        "aria-label",
+        `${count} ${count === 1 ? "job" : "jobs"} saved`
+    );
 }
 
+
+// UPDATE WISHLIST BUTTON
 function updateWishlistButton(button, job) {
-  const isSaved = wishlist.includes(getJobId(job));
-  button.classList.toggle("is-saved", isSaved);
-  button.textContent = isSaved ? "♥" : "♡";
-  button.setAttribute("aria-pressed", String(isSaved));
-  button.setAttribute("aria-label", `\({isSaved ? "Remove" : "Add"}\){job.title || "this job"} ${isSaved ? "from" : "to"} wishlist`);
+    const isSaved = wishlist.includes(getJobId(job));
+
+    button.classList.toggle("is-saved", isSaved);
+    button.textContent = isSaved ? "♥" : "♡";
+
+    button.setAttribute("aria-pressed", String(isSaved));
+
+    button.setAttribute(
+        "aria-label",
+        `${isSaved ? "Remove" : "Add"} ${job.title || "this job"} ${
+            isSaved ? "from" : "to"
+        } wishlist`
+    );
 }
 
+
+// TOGGLE WISHLIST
 function toggleWishlist(job, button) {
-  const jobId = getJobId(job);
-  if (wishlist.includes(jobId)) {
-    wishlist = wishlist.filter(id => id !== jobId);
-  } else {
-    wishlist.push(jobId);
-  }
+    const jobId = getJobId(job);
 
-  const saved = saveWishlist();
-  updateWishlistCount();
-  updateWishlistButton(button, job);
-  if (!saved) {
-    wishlistCount.setAttribute("title", "Your browser could not save changes to local storage.");
-  } else {
-    wishlistCount.removeAttribute("title");
-  }
+    if (wishlist.includes(jobId)) {
+        wishlist = wishlist.filter(id => id !== jobId);
+    } else {
+        wishlist.push(jobId);
+    }
+
+    const saved = saveWishlist();
+
+    updateWishlistCount();
+    updateWishlistButton(button, job);
+
+    if (!saved) {
+        wishlistCount.setAttribute(
+            "title",
+            "Your browser could not save changes to local storage."
+        );
+    } else {
+        wishlistCount.removeAttribute("title");
+    }
 }
 
+
+// NORMALIZE TEXT
 function normalize(value) {
-  return String(value ?? "").trim().toLocaleLowerCase();
+    return String(value ?? "").trim().toLocaleLowerCase();
 }
 
+
+// SHOW ERROR
 function showError(message) {
-  jobGrid.replaceChildren();
-  resultsCount.textContent = message;
-  noResults.hidden = true;
+    jobGrid.replaceChildren();
+    resultsCount.textContent = message;
+    noResults.hidden = true;
 }
 
+
+// FILL CATEGORY DROPDOWN
 function fillCategoryDropdown(jobs) {
-  const categories = [...new Set(
-    jobs.map(job => String(job.category ?? "").trim()).filter(Boolean)
-  )].sort((a, b) => a.localeCompare(b));
+    const categories = [
+        ...new Set(
+            jobs
+                .map(job => String(job.category ?? "").trim())
+                .filter(Boolean)
+        )
+    ].sort((a, b) => a.localeCompare(b));
 
-  categorySelect.replaceChildren(new Option("All categories", "all"));
-  categories.forEach(category => categorySelect.add(new Option(category, category)));
+    categorySelect.replaceChildren(
+        new Option("All categories", "all")
+    );
+
+    categories.forEach(category => {
+        categorySelect.add(new Option(category, category));
+    });
 }
 
+
+// OPEN JOB DETAILS MODAL
 function openJobModal(job, triggerElement) {
-  previouslyFocusedElement = triggerElement;
+    previouslyFocusedElement = triggerElement;
 
-  modalTitle.textContent = job.title || "Untitled position";
-  modalCategory.textContent = job.category || "General";
-  modalCompany.textContent = job.company || "Company not specified";
-  modalMeta.textContent = [job.location, job.type].filter(Boolean).join(" · ");
-  modalDescription.textContent =
-    job.description || "No additional description is available for this position.";
-  applyStatus.textContent = "";
-  applyButton.dataset.applyUrl = job.applyUrl || "";
+    modalTitle.textContent = job.title || "Untitled position";
+    modalCategory.textContent = job.category || "General";
+    modalCompany.textContent = job.company || "Company not specified";
 
-  jobModal.hidden = false;
-  jobModal.setAttribute("aria-hidden", "false");
-  document.body.classList.add("modal-open");
+    modalMeta.textContent = [
+        job.location,
+        job.type
+    ].filter(Boolean).join(" · ");
 
-  closeModalButton.focus();
+    modalDescription.textContent =
+        job.description ||
+        "No additional description is available for this position.";
+
+    applyStatus.textContent = "";
+
+    applyButton.dataset.applyUrl = job.applyUrl || "";
+
+    jobModal.hidden = false;
+
+    jobModal.setAttribute("aria-hidden", "false");
+
+    document.body.classList.add("modal-open");
+
+    closeModalButton.focus();
 }
 
+
+// CLOSE JOB DETAILS MODAL
 function closeJobModal() {
-  if (jobModal.hidden) return;
+    if (jobModal.hidden) return;
 
-  jobModal.hidden = true;
-  jobModal.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("modal-open");
+    jobModal.hidden = true;
 
-  if (previouslyFocusedElement) {
-    previouslyFocusedElement.focus();
-  }
+    jobModal.setAttribute("aria-hidden", "true");
+
+    document.body.classList.remove("modal-open");
+
+    if (previouslyFocusedElement) {
+        previouslyFocusedElement.focus();
+    }
 }
 
+
+// CREATE JOB CARD
 function createJobCard(job) {
-  const card = document.createElement("article");
-  card.className = "job-card";
-  card.tabIndex = 0;
-  card.setAttribute("role", "group");
-  card.setAttribute("aria-haspopup", "dialog");
-  card.setAttribute("aria-label", `View details for \({job.title || "job"} at\){job.company || "company"}`);
+    const card = document.createElement("article");
 
-  const image = document.createElement("div");
-  image.className = "card-image";
-  image.textContent = job.category || "General";
-  image.setAttribute("aria-hidden", "true");
+    card.className = "job-card";
+    card.tabIndex = 0;
 
-  const body = document.createElement("div");
-  body.className = "card-body";
+    card.setAttribute("role", "group");
+    card.setAttribute("aria-haspopup", "dialog");
 
-  const title = document.createElement("h2");
-  title.className = "card-title";
-  title.textContent = job.title || "Untitled position";
+    card.setAttribute(
+        "aria-label",
+        `View details for ${job.title || "job"} at ${
+            job.company || "company"
+        }`
+    );
 
-  const company = document.createElement("p");
-  company.className = "card-company";
-  company.textContent = job.company || "Company not specified";
+    const image = document.createElement("div");
 
-  const meta = document.createElement("p");
-  meta.className = "card-meta";
-  meta.textContent = [job.location, job.type].filter(Boolean).join(" · ");
+    image.className = "card-image";
+    image.textContent = job.category || "General";
+    image.setAttribute("aria-hidden", "true");
 
-  const actions = document.createElement("div");
-  actions.className = "card-actions";
+    const body = document.createElement("div");
 
-  const hint = document.createElement("span");
-  hint.className = "card-hint";
-  hint.textContent = "View job details";
+    body.className = "card-body";
 
-  const wishlistButton = document.createElement("button");
-  wishlistButton.type = "button";
-  wishlistButton.className = "wishlist-button";
-  wishlistButton.addEventListener("click", event => {
-    event.stopPropagation();
-    toggleWishlist(job, wishlistButton);
-  });
-  wishlistButton.addEventListener("keydown", event => event.stopPropagation());
-  updateWishlistButton(wishlistButton, job);
+    const title = document.createElement("h2");
 
-  actions.append(hint, wishlistButton);
-  body.append(title, company, meta, actions);
-  card.append(image, body);
+    title.className = "card-title";
+    title.textContent = job.title || "Untitled position";
 
-  card.addEventListener("click", () => openJobModal(job, card));
-  card.addEventListener("keydown", event => {
-    if (event.target !== card) return;
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openJobModal(job, card);
-    }
-  });
+    const company = document.createElement("p");
 
-  return card;
+    company.className = "card-company";
+    company.textContent = job.company || "Company not specified";
+
+    const meta = document.createElement("p");
+
+    meta.className = "card-meta";
+
+    meta.textContent = [
+        job.location,
+        job.type
+    ].filter(Boolean).join(" · ");
+
+    const actions = document.createElement("div");
+
+    actions.className = "card-actions";
+
+    const hint = document.createElement("span");
+
+    hint.className = "card-hint";
+    hint.textContent = "View job details";
+
+    const wishlistButton = document.createElement("button");
+
+    wishlistButton.type = "button";
+    wishlistButton.className = "wishlist-button";
+
+    wishlistButton.addEventListener("click", event => {
+        event.stopPropagation();
+        toggleWishlist(job, wishlistButton);
+    });
+
+    wishlistButton.addEventListener("keydown", event => {
+        event.stopPropagation();
+    });
+
+    updateWishlistButton(wishlistButton, job);
+
+    actions.append(hint, wishlistButton);
+
+    body.append(title, company, meta, actions);
+
+    card.append(image, body);
+
+    card.addEventListener("click", () => {
+        openJobModal(job, card);
+    });
+
+    card.addEventListener("keydown", event => {
+        if (event.target !== card) return;
+
+        if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            openJobModal(job, card);
+        }
+    });
+
+    return card;
 }
 
+
+// RENDER JOBS
 function renderJobs(jobs) {
-  const fragment = document.createDocumentFragment();
-  jobs.forEach(job => fragment.appendChild(createJobCard(job)));
-  jobGrid.replaceChildren(fragment);
+    const fragment = document.createDocumentFragment();
 
-  noResults.hidden = jobs.length !== 0;
-  updateWishlistCount();
-  resultsCount.textContent = `\({jobs.length}\){jobs.length === 1 ? "job" : "jobs"} found`;
+    jobs.forEach(job => {
+        fragment.appendChild(createJobCard(job));
+    });
+
+    jobGrid.replaceChildren(fragment);
+
+    noResults.hidden = jobs.length !== 0;
+
+    updateWishlistCount();
+
+    // Fixed: Correct JavaScript template literal
+    resultsCount.textContent =
+        `${jobs.length} ${jobs.length === 1 ? "job" : "jobs"} found`;
 }
 
+
+// APPLY SEARCH AND CATEGORY FILTERS
 function applyFilters() {
-  const searchText = normalize(searchInput.value);
-  const selectedCategory = normalize(categorySelect.value);
+    const searchText = normalize(searchInput.value);
 
-  const filteredJobs = allJobs.filter(job => {
-    const searchableText = [
-      job.title, job.company, job.location, job.type,
-      job.category, job.description
-    ].map(normalize).join(" ");
+    const selectedCategory = normalize(categorySelect.value);
 
-    const matchesSearch = searchText === "" || searchableText.includes(searchText);
-    const matchesCategory =
-      selectedCategory === "all" || normalize(job.category) === selectedCategory;
+    const filteredJobs = allJobs.filter(job => {
 
-    return matchesSearch && matchesCategory;
-  });
+        const searchableText = [
+            job.title,
+            job.company,
+            job.location,
+            job.type,
+            job.category,
+            job.description
+        ].map(normalize).join(" ");
 
-  renderJobs(filteredJobs);
+        const matchesSearch =
+            searchText === "" ||
+            searchableText.includes(searchText);
+
+        const matchesCategory =
+            selectedCategory === "all" ||
+            normalize(job.category) === selectedCategory;
+
+        return matchesSearch && matchesCategory;
+    });
+
+    renderJobs(filteredJobs);
 }
 
+
+// LOAD JOBS FROM JSON FILE
 async function loadJobs() {
-  try {
-    const jsonUrl = new URL('jobs.json', window.location.href).href;
-    const response = await fetch(jsonUrl, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`Could not load jobs.json (HTTP ${response.status}).`);
-    }
+    try {
+        const jsonUrl = new URL(
+            "jobs.json",
+            window.location.href
+        ).href;
 
-    const data = await response.json();
-    if (!Array.isArray(data)) {
-      throw new Error("jobs.json must contain a JSON array of jobs.");
-    }
+        const response = await fetch(jsonUrl, {
+            cache: "no-store"
+        });
 
-    allJobs = data.filter(job => job && typeof job === "object" && !Array.isArray(job));
-    if (allJobs.length === 0) {
-      throw new Error("No valid job records were found in jobs.json.");
-    }
+        if (!response.ok) {
+            throw new Error(
+                `Could not load jobs.json (HTTP ${response.status}).`
+            );
+        }
 
-    fillCategoryDropdown(allJobs);
-    applyFilters();
-  } catch (error) {
-    console.error("Job loading error:", error);
-    showError(`${error.message} Run this project with VS Code Live Server, then refresh.`);
-  }
+        const data = await response.json();
+
+        if (!Array.isArray(data)) {
+            throw new Error(
+                "jobs.json must contain a JSON array of jobs."
+            );
+        }
+
+        allJobs = data.filter(
+            job =>
+                job &&
+                typeof job === "object" &&
+                !Array.isArray(job)
+        );
+
+        if (allJobs.length === 0) {
+            throw new Error(
+                "No valid job records were found in jobs.json."
+            );
+        }
+
+        fillCategoryDropdown(allJobs);
+
+        applyFilters();
+
+    } catch (error) {
+        console.error("Job loading error:", error);
+
+        showError(
+            `${error.message} Run this project with VS Code Live Server, then refresh.`
+        );
+    }
 }
 
-closeModalButton.addEventListener("click", closeJobModal);
 
+// CLOSE MODAL BUTTON
+closeModalButton.addEventListener(
+    "click",
+    closeJobModal
+);
+
+
+// CLOSE MODAL WHEN CLICKING OUTSIDE
 jobModal.addEventListener("click", event => {
-  if (event.target === jobModal) closeJobModal();
+    if (event.target === jobModal) {
+        closeJobModal();
+    }
 });
 
+
+// KEYBOARD ACCESSIBILITY
 document.addEventListener("keydown", event => {
-  if (jobModal.hidden) return;
+    if (jobModal.hidden) return;
 
-  if (event.key === "Escape") {
-    event.preventDefault();
-    closeJobModal();
-    return;
-  }
-
-  if (event.key === "Tab") {
-    const focusable = [...jobModal.querySelectorAll(
-      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )].filter(element => element.offsetParent !== null);
-
-    if (focusable.length === 0) {
-      event.preventDefault();
-      closeModalButton.focus();
-      return;
+    if (event.key === "Escape") {
+        event.preventDefault();
+        closeJobModal();
+        return;
     }
 
-    const first = focusable[0];
-    const last = focusable[focusable.length - 1];
+    if (event.key === "Tab") {
 
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last.focus();
-    } else if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first.focus();
+        const focusable = [
+            ...jobModal.querySelectorAll(
+                'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            )
+        ].filter(element => element.offsetParent !== null);
+
+        if (focusable.length === 0) {
+            event.preventDefault();
+            closeModalButton.focus();
+            return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (
+            event.shiftKey &&
+            document.activeElement === first
+        ) {
+            event.preventDefault();
+            last.focus();
+
+        } else if (
+            !event.shiftKey &&
+            document.activeElement === last
+        ) {
+            event.preventDefault();
+            first.focus();
+        }
     }
-  }
 });
 
+
+// APPLY FOR JOB
 applyButton.addEventListener("click", () => {
-  const applyUrl = applyButton.dataset.applyUrl;
+    const applyUrl = applyButton.dataset.applyUrl;
 
-  if (applyUrl) {
-    window.open(applyUrl, "_blank", "noopener,noreferrer");
-  } else {
-    applyStatus.textContent = "An application link has not been provided for this job yet.";
-  }
+    if (applyUrl) {
+        window.open(
+            applyUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+    } else {
+        applyStatus.textContent =
+            "An application link has not been provided for this job yet.";
+    }
 });
 
+
+// LIVE SEARCH
 searchInput.addEventListener("input", applyFilters);
+
+
+// CATEGORY FILTER
 categorySelect.addEventListener("change", applyFilters);
 
+
+// INITIALIZE APPLICATION
 updateWishlistCount();
+
 loadJobs();
